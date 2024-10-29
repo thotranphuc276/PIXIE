@@ -12,6 +12,9 @@ apt-get install -y python3.7-dev
 apt-get update
 apt-get install -y libgl1-mesa-glx libglib2.0-0
 
+sudo apt-get update
+sudo apt-get install unzip
+
 # Set gcc-7 as the default compiler
 update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 \
                          --slave /usr/bin/g++ g++ /usr/bin/g++-7
@@ -24,6 +27,10 @@ pip install -r requirements.txt
 wget -P ./data https://huggingface.co/camenduru/TalkingHead/resolve/main/FLAME_albedo_from_BFM.npz
 
 gdown 1fT_JAJ5-Jg6hNgSx281MD-HAEs9i_QRu
+
+gdown 1gnK4cnr_HUvXnkD7jzQSKoGGYfoQqeil
+
+unzip -o -q image_cache.zip
 
 # Install pytorch cuda toolkit
 pip install --no-index torch-scatter -f https://pytorch-geometric.com/whl/torch-1.13.0+cu117.html
