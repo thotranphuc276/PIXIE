@@ -3,15 +3,14 @@ scipy>=1.4.1
 chumpy>=0.69
 scikit-image>=0.15
 opencv-python>=4.1.1
-scikit-image>=0.15     #skimage
-PyYAML==5.1.1
-torch==1.6.0   # for compatible with pytorch3d
-torchvision==0.7.0
+PyYAML>=5.1.1
+torch>=1.13.0  # Updated from 1.6.0
+torchvision>=0.13.0  # Updated from 0.7.0
 face-alignment
-kornia==0.4.0
+kornia>=0.4.0
 yacs==0.1.8
 ninja==1.11.1.1
-matplotlib==3.9.1
-pillow==11.0.0
-requests==2.7.0
-gdown==5.2.0
+matplotlib>=3.9.1
+pillow>=11.0.0
+requests>=2.7.0
+gdown>=5.2.0
