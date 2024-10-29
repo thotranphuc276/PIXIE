@@ -1,18 +1,24 @@
 import json
-import torch
-import requests
-from PIL import Image
+import os
 from io import BytesIO
+
+import requests
+import torch
+from PIL import Image
 from torchvision import transforms
 
+
 class COCOWholeBodyDataset:
-    def __init__(self, annotation_path):
+    def __init__(self, annotation_path, cache_dir='image_cache'):
         # Load annotations from JSON file
         with open(annotation_path, 'r') as f:
             data = json.load(f)
 
         self.image_info = {img['id']: img for img in data['images']}
         self.annotations = data['annotations']
+
+        os.makedirs(cache_dir, exist_ok=True)
+        self.cache_dir = cache_dir
 
         # Transformation pipeline
         self.transform = transforms.Compose([
@@ -30,7 +36,7 @@ class COCOWholeBodyDataset:
         image_info = self.image_info[image_id]
 
         # Download and transform the image
-        image = self.download_image(image_info['coco_url'])
+        image = self.load_or_download_image(image_info['coco_url'], image_id)
 
         # Extract keypoints and bounding boxes with default fallback to zeros
         data = {
@@ -46,6 +52,21 @@ class COCOWholeBodyDataset:
         }
 
         return data
+
+    def load_or_download_image(self, url, image_id):
+        """Load image from cache or download and save if not available."""
+        cache_path = os.path.join(self.cache_dir, f"{image_id}.pt")
+
+        if os.path.exists(cache_path):
+            # Load the image tensor from cache
+            return torch.load(cache_path)
+
+        # Download the image if not in cache
+        image_tensor = self.download_image(url)
+        # Save the image tensor to cache
+        torch.save(image_tensor, cache_path)
+
+        return image_tensor
 
     def _extract_keypoints(self, annotation, key, expected_len):
         """Extract keypoints or return default if missing."""
