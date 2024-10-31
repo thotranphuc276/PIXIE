@@ -10,7 +10,7 @@ import random
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Train PIXIE model on COCOWholeBody dataset.")
-parser.add_argument('--num_samples', type=int, default=1000, help="Number of random samples to train on")
+parser.add_argument('--num_samples', type=int, default=None, help="Number of random samples to train on")
 parser.add_argument('--batch_size', type=int, default=8, help="Batch size for training")
 args = parser.parse_args()
 

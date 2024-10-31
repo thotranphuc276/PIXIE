@@ -56,12 +56,15 @@ class KeypointLoss:
         return losses
 
     def _compute_keypoint_loss(self, pred, target, conf):
-        """Compute the weighted MSE loss."""
+        """Compute the weighted MSE loss with refined scaling."""
         valid_mask = conf > self.confidence_threshold
         if valid_mask.sum() == 0:
             return torch.tensor(0., device=pred.device, requires_grad=True)
 
-        loss = F.mse_loss(pred[valid_mask], target[valid_mask], reduction='none').sum(dim=-1)
+        # Use mean reduction instead of sum to prevent large values
+        loss = F.mse_loss(pred[valid_mask], target[valid_mask], reduction='mean')
+
+        # Weight the loss by confidence and take the mean
         weighted_loss = (loss * conf[valid_mask]).mean()
 
         return weighted_loss
