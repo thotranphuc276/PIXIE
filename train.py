@@ -8,6 +8,8 @@ from loader import COCOWholeBodyDataset
 from keypoint_loss import KeypointLoss
 import random
 
+torch.cuda.empty_cache()
+
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Train PIXIE model on COCOWholeBody dataset.")
 parser.add_argument('--num_samples', type=int, default=None, help="Number of random samples to train on")
