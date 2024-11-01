@@ -6,6 +6,7 @@ import requests
 import torch
 from PIL import Image
 from torchvision import transforms
+from torchvision.transforms import functional as F
 
 
 class COCOWholeBodyDataset:
@@ -59,7 +60,7 @@ class COCOWholeBodyDataset:
 
         if os.path.exists(cache_path):
             # Load the image tensor from cache
-            return torch.load(cache_path)
+            return F.resize(torch.load(cache_path), (224, 224))
 
         # Download the image if not in cache
         image_tensor = self.download_image(url)
