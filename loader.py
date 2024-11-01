@@ -1,16 +1,12 @@
 import json
 import os
 from io import BytesIO
+
 import requests
 import torch
 from PIL import Image
 from torchvision import transforms
-from tqdm import tqdm
-from pixielib.pixie import PIXIE
-from pixielib.utils.config import cfg as pixie_cfg
-from loader import COCOWholeBodyDataset
-from keypoint_loss import KeypointLoss
-import random
+
 
 class COCOWholeBodyDataset:
     def __init__(self, annotation_path, cache_dir='image_cache'):
@@ -78,6 +74,7 @@ class COCOWholeBodyDataset:
         cache_path = os.path.join(self.cache_dir, f"{image_id}.pt")
 
         if os.path.exists(cache_path):
+            print(f"Loading image from cache: {cache_path}")
             # Load the image tensor from cache
             image_tensor = torch.load(cache_path)
             image = transforms.ToPILImage()(image_tensor)
@@ -85,6 +82,7 @@ class COCOWholeBodyDataset:
             return transforms.ToTensor()(image)
 
         # Download the image if not in cache
+        print(f"Downloading image from {url}")
         image_tensor = self.download_image(url)
         torch.save(image_tensor, cache_path)
         return image_tensor
@@ -104,4 +102,3 @@ class COCOWholeBodyDataset:
         except Exception as e:
             print(f"Error downloading image from {url}: {e}")
             return torch.zeros(3, 224, 224)
-

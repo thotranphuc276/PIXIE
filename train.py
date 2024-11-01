@@ -1,12 +1,13 @@
 import argparse
+
 import torch
 import torch.optim as optim
 from tqdm import tqdm
+
+from keypoint_loss import KeypointLoss
+from loader import COCOWholeBodyDataset
 from pixielib.pixie import PIXIE
 from pixielib.utils.config import cfg as pixie_cfg
-from loader import COCOWholeBodyDataset
-from keypoint_loss import KeypointLoss
-import random
 
 torch.cuda.empty_cache()
 
@@ -65,5 +66,7 @@ for epoch in range(num_epochs):
         optimizer.step()
 
         total_loss += loss.item()
+
+        print(f"Total loss: {total_loss}")
 
 print("Training completed!")
