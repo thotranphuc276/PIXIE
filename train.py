@@ -22,7 +22,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 pixie = PIXIE(config=pixie_cfg, device=device)
 keypoint_loss_fn = KeypointLoss(confidence_threshold=0.3)
 
-# Ensure that all parameters require gradients
+# Ensure all parameters require gradients
 params = []
 for module in [pixie.Encoder, pixie.Regressor, pixie.Extractor, pixie.Moderator]:
     for net in module.values():
@@ -33,39 +33,37 @@ for module in [pixie.Encoder, pixie.Regressor, pixie.Extractor, pixie.Moderator]
 # Optimizer setup
 optimizer = optim.Adam(params, lr=1e-4)
 
-# DataLoader setup with random sampling and batch size
+# DataLoader setup for cached and non-cached images
 dataset = COCOWholeBodyDataset('coco_wholebody_train_v1.0.json')
-if args.num_samples:
-    dataset.annotations = dataset.annotations[:args.num_samples]
+cached_dataset = torch.utils.data.Subset(dataset, range(len(dataset.cached_annotations)))
+non_cached_dataset = torch.utils.data.Subset(dataset, range(len(dataset.cached_annotations), len(dataset)))
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
+# Use DataLoader to prioritize cached images first
+cached_dataloader = torch.utils.data.DataLoader(cached_dataset, batch_size=args.batch_size, shuffle=True)
+non_cached_dataloader = torch.utils.data.DataLoader(non_cached_dataset, batch_size=args.batch_size, shuffle=True)
+
 num_epochs = args.num_epochs
 
+# Training loop
 for epoch in range(num_epochs):
     total_loss = 0
 
-    for batch in tqdm(dataloader):
-        # Move data to the appropriate device
+    # Train on cached images first
+    for batch in tqdm(cached_dataloader, desc=f"Epoch [{epoch + 1}/{num_epochs}] - Cached Images"):
         images = batch['image'].to(device)
         batch = {k: v.to(device) if torch.is_tensor(v) else v for k, v in batch.items()}
 
-        # Forward pass through PIXIE
         data = {'body': {'image': images, 'image_hd': images}}
         param_dict = pixie.encode(data)
         opdict = pixie.decode(param_dict['body'], param_type='body')
 
-        # Compute loss and ensure it requires gradients
         loss_dict = keypoint_loss_fn.compute_loss(opdict, batch, keypoint_type='all')
-        loss = loss_dict['total']
-        loss = loss.requires_grad_(True)  # Ensure it tracks gradients
+        loss = loss_dict['total'].requires_grad_(True)
 
-        # Backpropagation
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
         total_loss += loss.item()
-
-    print(f'Epoch [{epoch + 1}/10], Loss: {total_loss:.4f}')
 
 print("Training completed!")

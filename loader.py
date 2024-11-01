@@ -1,13 +1,16 @@
 import json
 import os
 from io import BytesIO
-
 import requests
 import torch
 from PIL import Image
 from torchvision import transforms
-from torchvision.transforms import functional as F
-
+from tqdm import tqdm
+from pixielib.pixie import PIXIE
+from pixielib.utils.config import cfg as pixie_cfg
+from loader import COCOWholeBodyDataset
+from keypoint_loss import KeypointLoss
+import random
 
 class COCOWholeBodyDataset:
     def __init__(self, annotation_path, cache_dir='image_cache'):
@@ -21,10 +24,13 @@ class COCOWholeBodyDataset:
         os.makedirs(cache_dir, exist_ok=True)
         self.cache_dir = cache_dir
 
+        # Separate cached and non-cached images
+        self.cached_annotations, self.non_cached_annotations = self._split_cached_annotations()
+
         # Transformation pipeline
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),
-            transforms.ToTensor(),  # Convert image to tensor
+            transforms.ToTensor(),
         ])
 
     def __len__(self):
@@ -54,24 +60,33 @@ class COCOWholeBodyDataset:
 
         return data
 
+    def _split_cached_annotations(self):
+        """Split annotations into cached and non-cached based on cache existence."""
+        cached = []
+        non_cached = []
+        for annotation in self.annotations:
+            image_id = annotation['image_id']
+            cache_path = os.path.join(self.cache_dir, f"{image_id}.pt")
+            if os.path.exists(cache_path):
+                cached.append(annotation)
+            else:
+                non_cached.append(annotation)
+        return cached, non_cached
+
     def load_or_download_image(self, url, image_id):
         """Load image from cache or download and save if not available."""
         cache_path = os.path.join(self.cache_dir, f"{image_id}.pt")
 
         if os.path.exists(cache_path):
-            # Load the image tensor from cache and convert to PIL Image
+            # Load the image tensor from cache
             image_tensor = torch.load(cache_path)
             image = transforms.ToPILImage()(image_tensor)
-            # Apply resize transformation
             image = transforms.Resize((224, 224))(image)
-            # Convert back to tensor
             return transforms.ToTensor()(image)
 
         # Download the image if not in cache
         image_tensor = self.download_image(url)
-        # Save the image tensor to cache
         torch.save(image_tensor, cache_path)
-
         return image_tensor
 
     def _extract_keypoints(self, annotation, key, expected_len):
@@ -89,3 +104,4 @@ class COCOWholeBodyDataset:
         except Exception as e:
             print(f"Error downloading image from {url}: {e}")
             return torch.zeros(3, 224, 224)
+
