@@ -14,6 +14,7 @@ torch.cuda.empty_cache()
 parser = argparse.ArgumentParser(description="Train PIXIE model on COCOWholeBody dataset.")
 parser.add_argument('--num_samples', type=int, default=None, help="Number of random samples to train on")
 parser.add_argument('--batch_size', type=int, default=8, help="Batch size for training")
+parser.add_argument('--num_epochs', type=int, default=10, help="Number of epochs to train for")
 args = parser.parse_args()
 
 # Initialize device and model
@@ -35,15 +36,12 @@ optimizer = optim.Adam(params, lr=1e-4)
 # DataLoader setup with random sampling and batch size
 dataset = COCOWholeBodyDataset('coco_wholebody_train_v1.0.json')
 if args.num_samples:
-    # Generate random indices
-    random_indices = random.sample(range(len(dataset)), args.num_samples)
-    # Create a Subset with these random indices
-    dataset = torch.utils.data.Subset(dataset, random_indices)
+    dataset.annotations = dataset.annotations[:args.num_samples]
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
+num_epochs = args.num_epochs
 
-# Training loop
-for epoch in range(10):
+for epoch in range(num_epochs):
     total_loss = 0
 
     for batch in tqdm(dataloader):
