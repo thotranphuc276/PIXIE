@@ -28,7 +28,7 @@ wget -P ./data https://huggingface.co/camenduru/TalkingHead/resolve/main/FLAME_a
 
 gdown 1fT_JAJ5-Jg6hNgSx281MD-HAEs9i_QRu
 
-gdown 1gnK4cnr_HUvXnkD7jzQSKoGGYfoQqeil
+gdown 1zcR-rLhNQ7QsW6-QZn9LZeLpjl8CrKHz
 
 unzip -o -q image_cache.zip
 
