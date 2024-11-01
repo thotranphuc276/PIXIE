@@ -59,8 +59,13 @@ class COCOWholeBodyDataset:
         cache_path = os.path.join(self.cache_dir, f"{image_id}.pt")
 
         if os.path.exists(cache_path):
-            # Load the image tensor from cache
-            return F.resize(torch.load(cache_path), (224, 224))
+            # Load the image tensor from cache and convert to PIL Image
+            image_tensor = torch.load(cache_path)
+            image = transforms.ToPILImage()(image_tensor)
+            # Apply resize transformation
+            image = transforms.Resize((224, 224))(image)
+            # Convert back to tensor
+            return transforms.ToTensor()(image)
 
         # Download the image if not in cache
         image_tensor = self.download_image(url)
