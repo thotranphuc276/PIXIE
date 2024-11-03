@@ -11,7 +11,7 @@ wget --post-data "username=$username&password=$password" 'https://download.is.tu
 echo -e "\nYou need to register at https://pixie.is.tue.mpg.de/"
 username="thochit2762003@gmail.com"
 password="tho2762003"
-wget --post-data "username=$username&password=$password" 'https://download.is.tue.mpg.de/download.php?domain=pixie&sfile=pixie_model.tar&resume=1' -O './data/pixie_model.tar' --no-check-certificate --continue
+#wget --post-data "username=$username&password=$password" 'https://download.is.tue.mpg.de/download.php?domain=pixie&sfile=pixie_model.tar&resume=1' -O './data/pixie_model.tar' --no-check-certificate --continue
 wget --post-data "username=$username&password=$password" 'https://download.is.tue.mpg.de/download.php?domain=pixie&sfile=utilities.zip&resume=1' -O './data/utilities.zip' --no-check-certificate --continue
 
 # shellcheck disable=SC2164
