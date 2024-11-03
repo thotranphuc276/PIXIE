@@ -67,6 +67,6 @@ for epoch in range(num_epochs):
 
         total_loss += loss.item()
 
-        print(f"Total loss: {total_loss}")
+    print(f"Total loss: {total_loss}")
 
 print("Training completed!")
